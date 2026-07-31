@@ -1,4 +1,4 @@
-package com.myname.mymodid;
+package tech.mazunki.gtnh.sundial;
 
 public class ClientProxy extends CommonProxy {
 
