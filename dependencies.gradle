@@ -35,4 +35,7 @@
  */
 dependencies {
     //runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.69-GTNH:dev")
+
+    devOnlyNonPublishable("com.github.GTNewHorizons:Galacticraft:3.4.32-GTNH:dev") // ships with the modpack
+    runtimeOnlyNonPublishable("com.github.GTNewHorizons:twilightforest:2.7.37:dev") // non-GC test dimension
 }
