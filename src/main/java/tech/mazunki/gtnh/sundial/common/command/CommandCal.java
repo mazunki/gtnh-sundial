@@ -1,12 +1,14 @@
 package tech.mazunki.gtnh.sundial.common.command;
 
+import java.util.Locale;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 
+import tech.mazunki.gtnh.sundial.common.dimension.DimensionReading;
 import tech.mazunki.gtnh.sundial.common.dimension.DimensionReadingResolver;
-import tech.mazunki.gtnh.sundial.common.dimension.GalacticraftBodies;
-import tech.mazunki.gtnh.sundial.common.dimension.RegisteredDimensions;
+import tech.mazunki.gtnh.sundial.common.dimension.Phase;
 
 // reports a dimension's current day/night phase without requiring the player to travel there.
 public class CommandCal extends CommandBase {
@@ -18,7 +20,7 @@ public class CommandCal extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/cal [dimension] [+format]";
+        return "/cal [dimension]";
     }
 
     @Override
@@ -28,12 +30,25 @@ public class CommandCal extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        int dimensionId = DimensionReadingResolver.resolveDimensionId(sender, args);
-        String name = GalacticraftBodies.displayNameFor(dimensionId);
-        if (name == null) {
-            name = RegisteredDimensions.displayNameFor(dimensionId);
+        DimensionReading reading = DimensionReadingResolver.resolve(sender, args);
+
+        if (reading.phase == null) {
+            sender.addChatMessage(new ChatComponentText(reading.label() + " has no day/night cycle."));
+            return;
         }
-        String label = (name != null) ? name + " (DIM" + dimensionId + ")" : "DIM" + dimensionId;
-        sender.addChatMessage(new ChatComponentText(label + " - TODO"));
+
+        sender.addChatMessage(new ChatComponentText(defaultLine(reading, TerminalColors.forSender(sender))));
+    }
+
+    private String defaultLine(DimensionReading r, TerminalColors c) {
+        String icon = (r.phase == Phase.NIGHT) ? "☾" : "☀";
+        return icon + " "
+            + c.label(r.label() + " Day ")
+            + c.yellow(String.valueOf(r.dayNumber))
+            + c.label(" Time: ")
+            + c.yellow(String.format(Locale.ROOT, "%02d:%02d %s", r.hour12, r.minute, r.ampmUpper))
+            + c.label(" (")
+            + c.gray(ClockFormatter.capitalize(r.phase.label))
+            + c.label(")");
     }
 }
