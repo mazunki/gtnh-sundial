@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -17,6 +19,7 @@ public final class RegisteredDimensions {
 
     // accepts a slug derived from the live name ("twilightforest"), a DIM<id> codename in any case,
     // or a bare integer id. Returns null if the argument matches none of these forms.
+    @Nullable
     public static Integer resolve(String arg) {
         Integer bySlug = bySlug().get(arg.toLowerCase(Locale.ROOT));
         if (bySlug != null) {
@@ -37,6 +40,7 @@ public final class RegisteredDimensions {
         }
     }
 
+    @Nullable
     public static String displayNameFor(int dimensionId) {
         WorldServer world = DimensionManager.getWorld(dimensionId);
         if (world != null) {

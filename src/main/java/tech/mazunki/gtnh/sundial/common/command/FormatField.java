@@ -1,5 +1,7 @@
 package tech.mazunki.gtnh.sundial.common.command;
 
+import javax.annotation.Nullable;
+
 public enum FormatField {
 
     CODENAME("D", "codename", "Dimension codename (e.g. DIM-28)"),
@@ -34,6 +36,7 @@ public enum FormatField {
         this.description = description;
     }
 
+    @Nullable
     public static FormatField byShortCode(String code) {
         for (FormatField field : values()) {
             if (field.shortCode.equals(code)) {
@@ -43,6 +46,7 @@ public enum FormatField {
         return null;
     }
 
+    @Nullable
     public static FormatField byLongName(String name) {
         for (FormatField field : values()) {
             if (field.longName.equals(name)) {

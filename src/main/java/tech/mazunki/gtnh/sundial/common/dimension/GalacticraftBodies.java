@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody;
 import micdoodle8.mods.galacticraft.api.galaxies.GalaxyRegistry;
 
@@ -13,12 +15,14 @@ public final class GalacticraftBodies {
 
     private GalacticraftBodies() {}
 
+    @Nullable
     public static Integer resolve(String name) {
         CelestialBody body = allLive().get(name.toLowerCase(Locale.ROOT));
         return (body != null) ? body.getDimensionID() : null;
     }
 
     // human-formatted display name (e.g "Alpha Centauri Bb")
+    @Nullable
     public static String displayNameFor(int dimensionId) {
         for (CelestialBody body : allLive().values()) {
             if (body.getDimensionID() == dimensionId) {

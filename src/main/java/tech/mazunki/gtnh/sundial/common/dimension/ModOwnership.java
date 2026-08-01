@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nullable;
+
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 
@@ -20,6 +22,7 @@ public final class ModOwnership {
 
     private ModOwnership() {}
 
+    @Nullable
     public static String forClass(Class<?> clazz) {
         File source = sourceOf(clazz);
         if (source == null) {
@@ -39,6 +42,7 @@ public final class ModOwnership {
         return null;
     }
 
+    @Nullable
     private static File sourceOf(Class<?> clazz) {
         CodeSource codeSource = clazz.getProtectionDomain()
             .getCodeSource();
