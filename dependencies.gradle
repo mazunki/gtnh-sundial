@@ -38,4 +38,7 @@ dependencies {
 
     devOnlyNonPublishable("com.github.GTNewHorizons:Galacticraft:3.4.32-GTNH:dev") // ships with the modpack
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:twilightforest:2.7.37:dev") // non-GC test dimension
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

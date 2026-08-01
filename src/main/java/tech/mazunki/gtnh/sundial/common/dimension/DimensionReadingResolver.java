@@ -52,19 +52,35 @@ public final class DimensionReadingResolver {
         // override ignores the raw tick argument but still uses partial-ticks
         boolean hasRealCycle = provider.calculateCelestialAngle(0L, 0.0F)
             != provider.calculateCelestialAngle(0L, 0.99F);
+        long localTime = provider.getWorldTime();
 
+        return computeReading(
+            dimensionId,
+            codename,
+            safeDisplayName,
+            ownerModName,
+            galacticraftName,
+            canSleepHere,
+            dayLength,
+            hasRealCycle,
+            localTime);
+    }
+
+    // pure day/night math, split out from resolve() so it's testable without a live World
+    static DimensionReading computeReading(int dimensionId, String codename, String displayName,
+        String ownerModName, String galacticraftName, boolean canSleepHere, long dayLength, boolean hasRealCycle,
+        long localTime) {
         if (dayLength <= 0 || !hasRealCycle) {
             return new DimensionReading(
                 dimensionId,
                 codename,
-                safeDisplayName,
+                displayName,
                 ownerModName,
                 galacticraftName,
                 canSleepHere,
                 dayLength);
         }
 
-        long localTime = provider.getWorldTime();
         long ticksIntoDay = ((localTime % dayLength) + dayLength) % dayLength;
         double dayFraction = ticksIntoDay / (double) dayLength;
         long dayNumber = localTime / dayLength + 1;
@@ -79,7 +95,7 @@ public final class DimensionReadingResolver {
         return new DimensionReading(
             dimensionId,
             codename,
-            safeDisplayName,
+            displayName,
             ownerModName,
             galacticraftName,
             canSleepHere,
