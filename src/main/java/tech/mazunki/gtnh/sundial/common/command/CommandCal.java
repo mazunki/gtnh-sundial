@@ -1,7 +1,11 @@
 package tech.mazunki.gtnh.sundial.common.command;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -11,7 +15,9 @@ import net.minecraft.util.ChatComponentText;
 
 import tech.mazunki.gtnh.sundial.common.dimension.DimensionReading;
 import tech.mazunki.gtnh.sundial.common.dimension.DimensionReadingResolver;
+import tech.mazunki.gtnh.sundial.common.dimension.GalacticraftBodies;
 import tech.mazunki.gtnh.sundial.common.dimension.Phase;
+import tech.mazunki.gtnh.sundial.common.dimension.RegisteredDimensions;
 
 // reports a dimension's current day/night phase without requiring the player to travel there.
 public class CommandCal extends CommandBase {
@@ -89,5 +95,54 @@ public class CommandCal extends CommandBase {
             + c.label(" (")
             + c.gray(ClockFormatter.capitalize(r.phase.label))
             + c.label(")");
+    }
+
+    @Override
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        if (args.length == 0) {
+            return null;
+        }
+
+        boolean inFormat = Arrays.stream(args)
+            .anyMatch(arg -> arg.startsWith("+"));
+        if (inFormat) {
+            return completeFormatToken(args[args.length - 1]);
+        }
+
+        if (args.length == 1) {
+            // galacticraft registers some names (Overworld, Ross128a/b) through GalaxyRegistry too,
+            // so dedupe against RegisteredDimensions's same names
+            Set<String> names = new LinkedHashSet<>(Arrays.asList(GalacticraftBodies.allNames()));
+            names.addAll(Arrays.asList(RegisteredDimensions.allNames()));
+            return getListOfStringsMatchingLastWord(args, names.toArray(new String[0]));
+        }
+        return null;
+    }
+
+    // 1.7.10 tab completion replaces the whole last token, so completions include everything typed
+    // so far plus the chosen field.
+    private List<String> completeFormatToken(String lastArg) {
+        int braceIndex = lastArg.lastIndexOf('{');
+        if (braceIndex != -1 && braceIndex >= lastArg.lastIndexOf('}')) {
+            String prefix = lastArg.substring(braceIndex + 1);
+            String beforeBrace = lastArg.substring(0, braceIndex + 1);
+            List<String> completions = new ArrayList<>();
+            for (FormatField field : FormatField.values()) {
+                if (field.longName.startsWith(prefix)) {
+                    completions.add(beforeBrace + field.longName + "}");
+                }
+            }
+            return completions;
+        }
+
+        if (lastArg.endsWith("%")) {
+            List<String> completions = new ArrayList<>();
+            for (FormatField field : FormatField.values()) {
+                completions.add(lastArg + field.shortCode);
+            }
+            completions.add(lastArg + "%");
+            return completions;
+        }
+        return null;
     }
 }

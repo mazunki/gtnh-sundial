@@ -2,8 +2,10 @@ package tech.mazunki.gtnh.sundial.common.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -13,11 +15,15 @@ import net.minecraft.util.ChatComponentText;
 
 import tech.mazunki.gtnh.sundial.common.dimension.DimensionReading;
 import tech.mazunki.gtnh.sundial.common.dimension.DimensionReadingResolver;
+import tech.mazunki.gtnh.sundial.common.dimension.GalacticraftBodies;
 import tech.mazunki.gtnh.sundial.common.dimension.Phase;
+import tech.mazunki.gtnh.sundial.common.dimension.RegisteredDimensions;
 
 // help/info/format subcommands: usage help, a diagnostic dump for a dimension, and the +FORMAT
 // field reference
 public class CommandSundial extends CommandBase {
+
+    private static final List<String> SUBCOMMANDS = Arrays.asList("help", "info", "format");
 
     @Override
     public String getCommandName() {
@@ -165,5 +171,18 @@ public class CommandSundial extends CommandBase {
                     + c.cyan("{" + field.longName + "}")
                     + c.gray(": " + field.description));
         }
+    }
+
+    @Override
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        if (args.length == 1) {
+            return getListOfStringsMatchingLastWord(args, SUBCOMMANDS.toArray(new String[0]));
+        }
+        if (args.length == 2 && "info".equalsIgnoreCase(args[0])) {
+            Set<String> names = new LinkedHashSet<>(Arrays.asList(GalacticraftBodies.allNames()));
+            names.addAll(Arrays.asList(RegisteredDimensions.allNames()));
+            return getListOfStringsMatchingLastWord(args, names.toArray(new String[0]));
+        }
+        return null;
     }
 }
