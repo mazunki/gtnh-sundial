@@ -1,9 +1,12 @@
 package tech.mazunki.gtnh.sundial.common.command;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
 import net.minecraft.util.ChatComponentText;
 
 import tech.mazunki.gtnh.sundial.common.dimension.DimensionReading;
@@ -20,7 +23,8 @@ public class CommandCal extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/cal [dimension]";
+        return "/cal [dimension] [+format]\n" + "  e.g. /cal moon\n"
+            + "  e.g. /cal moon +{day} {hour12}:{minute} {ampm} ({phase})";
     }
 
     @Override
@@ -30,14 +34,49 @@ public class CommandCal extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        DimensionReading reading = DimensionReadingResolver.resolve(sender, args);
+        int formatStart = formatArgStart(args);
+        String[] dimArgs = Arrays.copyOfRange(args, 0, formatStart);
+        String format = (formatStart < args.length)
+            ? String.join(" ", Arrays.copyOfRange(args, formatStart, args.length))
+                .substring(1)
+            : null;
+
+        if (dimArgs.length > 1) {
+            throw new WrongUsageException(getCommandUsage(sender));
+        }
+
+        DimensionReading reading = DimensionReadingResolver.resolve(sender, dimArgs);
 
         if (reading.phase == null) {
             sender.addChatMessage(new ChatComponentText(reading.label() + " has no day/night cycle."));
             return;
         }
 
-        sender.addChatMessage(new ChatComponentText(defaultLine(reading, TerminalColors.forSender(sender))));
+        TerminalColors colors = TerminalColors.forSender(sender);
+        String output;
+        if (format != null) {
+            try {
+                output = ClockFormatter.render(format, reading);
+            } catch (IllegalArgumentException e) {
+                // escape here too: the message contains the player's own bad specifier (e.g. "%F").
+                throw new CommandException(
+                    e.getMessage()
+                        .replace("%", "%%"));
+            }
+        } else {
+            output = defaultLine(reading, colors);
+        }
+        sender.addChatMessage(new ChatComponentText(output));
+    }
+
+    // first '+'-prefixed token, a la `date +FORMAT`; everything before it is the dimension argument.
+    private static int formatArgStart(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("+")) {
+                return i;
+            }
+        }
+        return args.length;
     }
 
     private String defaultLine(DimensionReading r, TerminalColors c) {
